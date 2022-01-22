@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xunzhenw.crm.workbench.dao.ActivityDao">
+
+    <insert id="save">
+        insert into tbl_activity(
+            id,
+            owner,
+            name,
+            startDate,
+            endDate,
+            cost,
+            description,
+            createTime,
+            createBy,
+            editTime,
+            editBy
+        )
+        values(
+            #{id},
+            #{owner},
+            #{name},
+            #{startDate},
+            #{endDate},
+            #{cost},
+            #{description},
+            #{createTime},
+            #{createBy},
+            #{editTime},
+            #{editBy}
+        )
+    </insert>
+    
+    <select id="getActivityListByCondition" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select
+            a.id,
+            a.name,
+            u.name as owner,
+            a.startDate,
+            a.endDate
+        from tbl_activity a
+        join tbl_user u
+        on a.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                a.name like '%' #{name} '%'
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.startDate &gt;= #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.endDate &lt;= #{endDate}
+            </if>
+        </where>
+        order by a.createTime desc
+        limit #{skipCount},#{pageSize}
+    </select>
+
+    <select id="getTotalByCondition" resultType="int">
+        select count(*)
+        from tbl_activity a
+        join tbl_user u
+        on a.owner = u.id
+        <where>
+            <if test="name!=null and name!=''">
+                a.name like '%' #{name} '%'
+            </if>
+            <if test="owner!=null and owner!=''">
+                and u.name like '%' #{owner} '%'
+            </if>
+            <if test="startDate!=null and startDate!=''">
+                and a.startDate &gt;= #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and a.endDate &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <delete id="delete">
+        delete from tbl_activity
+        where id in
+        <foreach collection="array" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getById" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select * from tbl_activity where id=#{id}
+    </select>
+
+    <update id="update">
+        update tbl_activity set
+        owner=#{owner},
+        name=#{name},
+        startDate=#{startDate},
+        endDate=#{endDate},
+        cost=#{cost},
+        description=#{description},
+        editTime=#{editTime},
+        editBy=#{editBy}
+        where id=#{id}
+
+    </update>
+
+    <select id="detail" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select
+            a.id,
+            u.name as owner,
+            a.name,
+            a.startDate,
+            a.endDate,
+            a.cost,
+            a.description,
+            a.createTime,
+            a.createBy,
+            a.editTime,
+            a.editBy
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        where a.id=#{id}
+    </select>
+
+    <select id="getActivityListByClueId" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select
+        tcar.id as id,
+        a.name,
+        a.startDate,
+        a.endDate,
+        u.name as owner
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+        join tbl_clue_activity_relation tcar
+        on a.id=tcar.activityId
+
+        where tcar.clueId=#{clueId}
+    </select>
+
+    <select id="getActivityListByNameAndNotByClueId" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select
+            a.id,
+            a.name,
+            a.startDate,
+            a.endDate,
+            u.name as owner
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+
+        where a.name like '%' #{aName} '%' and a.id not in(
+            select
+            activityId
+            from tbl_clue_activity_relation
+            where clueId=#{clueId}
+        )
+    </select>
+
+    <select id="getActivityListByName" resultType="com.xunzhenw.crm.workbench.domain.Activity">
+        select
+            a.id,
+            a.name,
+            a.startDate,
+            a.endDate,
+            u.name as owner
+        from tbl_activity a
+        join tbl_user u
+        on a.owner=u.id
+
+        where a.name like '%' #{name} '%'
+    </select>
+</mapper>
+
+
+
